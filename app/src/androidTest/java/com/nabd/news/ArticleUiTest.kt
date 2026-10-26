@@ -21,7 +21,8 @@ class ArticleUiTest {
         compose.waitUntil(30000) { vm.articles.value.any { it.id == excerpt.id } }
         compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasText(excerpt.title))
         compose.onNodeWithText(excerpt.title).performClick()
-        compose.onNodeWithText("هذا مقتطف من الخبر. يمكنك قراءة التفاصيل الكاملة من المصدر الأصلي").assertExists()
+        compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("هذا مقتطف من الخبر. يمكنك قراءة التفاصيل الكاملة من المصدر الأصلي"))
+        compose.onNodeWithText("هذا مقتطف من الخبر. يمكنك قراءة التفاصيل الكاملة من المصدر الأصلي").assertIsDisplayed()
         compose.waitUntil(30000) { vm.articles.value.firstOrNull { it.id == excerpt.id }?.detailState == "permission_required" }
         compose.onNodeWithText("فتح صفحة المصدر يدويًا").assertExists()
         compose.onNodeWithText("العودة إلى نبض").assertDoesNotExist()

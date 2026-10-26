@@ -22,12 +22,9 @@ class MainActivity : ComponentActivity() {
         receiveShare(intent)
         setContent { CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) { NabdAppearance(vm) } }
     }
-    override fun onNewIntent(intent:Intent) { super.onNewIntent(intent);setIntent(intent);receiveShare(intent) }
+    override fun onNewIntent(intent:Intent) { super.onNewIntent(intent);receiveShare(intent) }
     private fun receiveShare(intent:Intent?) {
-        if(intent?.action==Intent.ACTION_SEND && intent.type=="text/plain") {
-            vm.acceptShare(intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString().orEmpty())
-            intent.removeExtra(Intent.EXTRA_TEXT);intent.action=Intent.ACTION_MAIN
-        }
+        consumeSharedText(intent)?.let(vm::acceptShare)
     }
 
 }

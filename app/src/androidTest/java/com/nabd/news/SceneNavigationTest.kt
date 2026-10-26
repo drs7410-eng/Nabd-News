@@ -3,6 +3,7 @@ package com.nabd.news
 import android.content.Intent
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
 
@@ -32,5 +33,10 @@ class SceneNavigationTest {
         compose.waitUntil(15000){compose.onAllNodesWithText("حفظ منشور في نبض المشهد").fetchSemanticsNodes().isNotEmpty()}
         compose.onNodeWithText("حفظ منشور في نبض المشهد").assertIsDisplayed()
         compose.onNodeWithText("إلغاء").performClick()
+        compose.runOnIdle {
+            assertEquals(Intent.ACTION_MAIN,compose.activity.intent.action)
+            assertNull(compose.activity.intent.type)
+            assertFalse(compose.activity.intent.hasExtra(Intent.EXTRA_TEXT))
+        }
     }
 }

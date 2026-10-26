@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-UNIT_REQUIRED = {"BbcArticleExtractorTest", "BbcRepositoryRoomTest", "FeedParserTest", "WorldRoomTest", "WorldNetworkTest", "WorldEditorialTest", "PlaybackRegressionTest", "ArticleMigrationSqlTest"}
-DEVICE_REQUIRED = {"MlKitTranslationSmokeTest", "NativePlaybackTest", "WorldReadingFlowTest", "ArticleMigrationTest", "WorldNavigationTest", "MediaNavigationTest", "UiSmokeTest"}
+UNIT_REQUIRED = {"SharedTextIntentTest", "BbcArticleExtractorTest", "BbcRepositoryRoomTest", "FeedParserTest", "WorldRoomTest", "WorldNetworkTest", "WorldEditorialTest", "PlaybackRegressionTest", "ArticleMigrationSqlTest"}
+DEVICE_REQUIRED = {"PersistenceTest", "ArticleUiTest", "SceneNavigationTest", "BbcReaderUiTest", "MlKitTranslationSmokeTest", "NativePlaybackTest", "WorldReadingFlowTest", "ArticleMigrationTest", "WorldNavigationTest", "MediaNavigationTest", "UiSmokeTest"}
 LIVE_UNIT = {"BbcReferenceLiveTest", "LiveFeedAuditTest"}
 
 def inspect(folder, required, allowed_skips=()):

@@ -85,7 +85,9 @@ class PersistenceTest {
                 calls++; return AiResult("نتيجة تجريبية", inputTokens = 1, outputTokens = 1) }
         }
         val repo = AiRepository(db.dao(), settings, mapOf("OpenAI" to mock))
-        val article = Article(title = "خبر", body = "نص متاح", url = "https://example.org/cache", source = "مصدر")
+        // A complete manual test source is required; this must never relax the production excerpt guard.
+        val article = Article(title = "خبر", body = "نص متاح", fullContent="نص كامل مخصص لاختبار ذاكرة التحليل فقط",contentOrigin="manual",detailState="ready",url = "https://example.org/cache", source = "مصدر")
+        db.dao().addArticles(listOf(article))
         db.dao().saveNote(Note(title = "private", body = "private-note-marker", articleIds = article.id))
         repo.analyze(listOf(article), "تلخيص قصير", "OpenAI")
         repo.analyze(listOf(article), "تلخيص قصير", "OpenAI")

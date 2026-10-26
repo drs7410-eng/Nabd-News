@@ -169,7 +169,8 @@ class NabdViewModel @JvmOverloads constructor(app: Application, val worldLocal: 
             finally { busy.value = false }
         }
     }
-    fun saveNote(note: Note) = task { noteMutex.withLock { dao.saveNote(note.copy(updated = System.currentTimeMillis())) } }
+    suspend fun persistNote(note:Note) { noteMutex.withLock { dao.saveNote(note.copy(updated=System.currentTimeMillis())) } }
+    fun saveNote(note: Note) = task { persistNote(note) }
     fun deleteNote(id: String) = task { noteMutex.withLock { dao.deleteNote(id) } }
     fun saveAnswer(analysis: Analysis) = task {
         val note=Note(title=analysis.operation,body=analysis.result,articleIds=analysis.articleIds,analysisId=analysis.id,links=analysis.sources,tags="ذكاء اصطناعي")

@@ -6,6 +6,6 @@
 *.md text eol=lf
 *.mp4 binary
 *.jar binary
-app/src/test/resources/reference/** -text
+app/src/test/resources/reference/** -text -whitespace
 app/src/test/resources/bbc-galaxy/*.html -text
 app/src/androidTest/assets/bbc-galaxy/*.html -text

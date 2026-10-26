@@ -58,6 +58,7 @@ import kotlinx.coroutines.delay
     var preview by rememberSaveable(id) { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
     var deleted by remember { mutableStateOf(false) }
+    var saving by remember { mutableStateOf(false) }
     val draft = original.copy(title = title, body = body, tags = tags, category = category, links = links, pinned = pinned, articleIds = linked)
     val latest by rememberUpdatedState(draft)
     val dirty by rememberUpdatedState(draft != original)
@@ -96,7 +97,10 @@ import kotlinx.coroutines.delay
         OutlinedTextField(links, { links = it.take(20000) }, Modifier.fillMaxWidth(), label = { Text("المصادر والروابط — كل رابط في سطر") }, minLines = 2)
         Action("ربط أخبار أو مجموعة أخبار", Icons.Outlined.Link) { linking = true }
         if (linked.isNotBlank()) Caption("مرتبطة بـ ${linked.split(',').size} خبر • ${if (original.analysisId.isNotBlank()) "ومن تحليل محفوظ" else "ملاحظة شخصية"}")
-        Button(onClick = { vm.saveNote(latest); close() }, modifier = Modifier.fillMaxWidth()) { Text("حفظ والعودة") }
+        Button(onClick = {
+            saving=true
+            vm.task {try {vm.persistNote(latest);close()}finally{saving=false}}
+        }, enabled=!saving, modifier = Modifier.fillMaxWidth()) { Text(if(saving)"جارٍ الحفظ…"else"حفظ والعودة") }
         TextButton(onClick = { deleting = true }) { Text("حذف التدوينة", color = MaterialTheme.colorScheme.error) }
     }
 }
