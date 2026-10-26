@@ -24,7 +24,7 @@ jobs:
           packages: platform-tools platforms;android-35 build-tools;35.0.0
       - uses: gradle/actions/wrapper-validation@v4
       - uses: gradle/actions/setup-gradle@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - run: python3 -m unittest discover -s scripts/tests -v
