@@ -1,0 +1,52 @@
+name: Signed personal candidate (Galaxy acceptance still required)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  quality:
+    uses: ./.github/workflows/android.yml
+  sign:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require original signing key, never generate a replacement
+        env:
+          NABD_KEY_B64: ${{ secrets.NABD_KEYSTORE_BASE64 }}
+          NABD_STORE_PASS: ${{ secrets.NABD_KEYSTORE_PASSWORD }}
+          NABD_KEY_PASS: ${{ secrets.NABD_KEY_PASSWORD }}
+          NABD_ALIAS: ${{ secrets.NABD_KEY_ALIAS }}
+        run: |
+          test -n "$NABD_KEY_B64" && test -n "$NABD_STORE_PASS" && test -n "$NABD_KEY_PASS" && test -n "$NABD_ALIAS" || { echo 'Original signing credentials missing. A different debug key is not an upgrade.'; exit 1; }
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew assembleDebug -PqaBuild=false -PbbcDiagnostic=false -PgalaxyOnly=true
+      - name: Sign compatible candidate and verify certificate, ID and version
+        env:
+          NABD_KEY_B64: ${{ secrets.NABD_KEYSTORE_BASE64 }}
+          NABD_STORE_PASS: ${{ secrets.NABD_KEYSTORE_PASSWORD }}
+          NABD_KEY_PASS: ${{ secrets.NABD_KEY_PASSWORD }}
+          NABD_ALIAS: ${{ secrets.NABD_KEY_ALIAS }}
+        run: |
+          umask 077
+          export NABD_TEMP_KEY="$RUNNER_TEMP/nabd-signing.keystore"
+          trap 'rm -f "$NABD_TEMP_KEY"' EXIT
+          python3 - <<'PY'
+          import base64,os
+          from pathlib import Path
+          Path(os.environ['NABD_TEMP_KEY']).write_bytes(base64.b64decode(os.environ['NABD_KEY_B64'],validate=True))
+          PY
+          mkdir -p quality-output
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$NABD_TEMP_KEY" --ks-key-alias "$NABD_ALIAS" --ks-pass env:NABD_STORE_PASS --key-pass env:NABD_KEY_PASS --out quality-output/Nabd-personal-CANDIDATE.apk app/build/outputs/apk/debug/app-debug.apk
+          python3 scripts/verify_candidate.py --apk quality-output/Nabd-personal-CANDIDATE.apk --build-tools "$ANDROID_HOME/build-tools/35.0.0" --output quality-output/signing-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Nabd-signed-CANDIDATE-NEEDS-GALAXY-ACCEPTANCE
+          path: quality-output
+          if-no-files-found: error

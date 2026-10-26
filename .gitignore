@@ -1,0 +1,15 @@
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+.idea/
+*.iml
+
+
+__pycache__/
+*.pyc
+
+.kotlin/
+
+quality-output/

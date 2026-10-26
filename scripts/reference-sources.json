@@ -1,0 +1,34 @@
+[
+  {
+    "id": "bbc-1",
+    "articleUrl": "http://www.bbc.com/news/world-us-canada-33646704",
+    "sha256": "b5ca9d50b6ede3fc7e95c988475fc4dbc693331ce4b4faca5b8a2696f13a7917",
+    "fixtureUrl": "https://raw.githubusercontent.com/mozilla/readability/ab4027a8b37669745016869a37a504727992b2ba/test/test-pages/bbc-1/source.html",
+    "expectedFixtureUrl": "https://raw.githubusercontent.com/mozilla/readability/ab4027a8b37669745016869a37a504727992b2ba/test/test-pages/bbc-1/expected.html",
+    "expectedSha256": "bc8ba56d61a638563373076ef7cbce5dbe2bde92e9df93a0f6ba0d49306a01cb"
+  },
+  {
+    "id": "guardian-1",
+    "articleUrl": "https://www.theguardian.com/environment/2019/jan/03/what-is-the-sea-telling-us-maori-tribes-fearful-over-whale-strandings",
+    "sha256": "48dd41ccd7f07c550b884e7e40213da141952f450ccb8d8ffe01250b75cf889d",
+    "fixtureUrl": "https://raw.githubusercontent.com/mozilla/readability/ab4027a8b37669745016869a37a504727992b2ba/test/test-pages/guardian-1/source.html",
+    "expectedFixtureUrl": "https://raw.githubusercontent.com/mozilla/readability/ab4027a8b37669745016869a37a504727992b2ba/test/test-pages/guardian-1/expected.html",
+    "expectedSha256": "6627b796fc76c78a3a96f1f08f6bf26f787942a3f0b409c829fa61f2f6b7cc57"
+  },
+  {
+    "id": "cnn",
+    "articleUrl": "http://money.cnn.com/2016/02/01/news/economy/poverty-inequality-united-states/index.html",
+    "sha256": "8c7640176eb567232d2b7f5ba9f7b3b76b46a61d2ee48338ca64680bdff1f983",
+    "fixtureUrl": "https://raw.githubusercontent.com/mozilla/readability/ab4027a8b37669745016869a37a504727992b2ba/test/test-pages/cnn/source.html",
+    "expectedFixtureUrl": "https://raw.githubusercontent.com/mozilla/readability/ab4027a8b37669745016869a37a504727992b2ba/test/test-pages/cnn/expected.html",
+    "expectedSha256": "0a918e0b33441e6533bb180222127a3d36ae9e0e1f556a902698857c1b72ccdc"
+  },
+  {
+    "id": "nytimes-1",
+    "articleUrl": "https://www.nytimes.com/2017/01/13/world/africa/sudan-sanctions.html",
+    "sha256": "fbcc8e24179ea73a8c3768ea51396f60b38c883601391734ec85c38d58554825",
+    "fixtureUrl": "https://raw.githubusercontent.com/mozilla/readability/ab4027a8b37669745016869a37a504727992b2ba/test/test-pages/nytimes-1/source.html",
+    "expectedFixtureUrl": "https://raw.githubusercontent.com/mozilla/readability/ab4027a8b37669745016869a37a504727992b2ba/test/test-pages/nytimes-1/expected.html",
+    "expectedSha256": "5fe223cdc5b7c30898f0a1b6e1a29ef07c4b0b3f6cf9edee571baf60ffba8810"
+  }
+]

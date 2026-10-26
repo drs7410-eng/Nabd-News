@@ -1,0 +1,6 @@
+{
+  "application_id": "com.nabd.news",
+  "previous_version_code": 12,
+  "signer_sha256": "65931992ce052252a27609072faab613cd3c6d11577f0a55d59144fed978ae01",
+  "require_galaxy_acceptance_before_release": true
+}

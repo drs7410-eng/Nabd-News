@@ -1,0 +1,25 @@
+name: Live source health (separate from offline quality)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  world:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/audit_world_sources.py
+      - name: Require at least one actual verified RSS
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('app/build/reports/world-source-audit/actual-source-results.json').read_text())
+          if not any(row.get('verified') for row in data): raise SystemExit('No real RSS verified; inspect evidence, not a successful live integration')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: actual-source-evidence
+          path: app/build/reports/world-source-audit

@@ -1,0 +1,25 @@
+name: عطل في نبض
+description: تسجيل عطل قابل لإعادة الاختبار دون مفاتيح أو بيانات خاصة
+title: '[Bug] '
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: خطوات إعادة المشكلة والنتيجة المتوقعة والفعلية
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: إصدار نبض وAndroid وطراز الجهاز
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: المصدر أو رابط المقطع العام وحالة الشبكة
+      description: لا ترسل مفاتيح API أو روابط تحمل رموز دخول أو ملاحظات شخصية.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: دليل اختياري بعد إزالة البيانات الخاصة
