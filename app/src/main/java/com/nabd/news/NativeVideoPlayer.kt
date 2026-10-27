@@ -10,6 +10,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 
 /** Internal construction shared by the real viewer and decoder tests, never exposed as an Intent. */
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal fun createNabdNativePlayer(context:Context,url:String,muted:Boolean,autoplay:Boolean,listener:Player.Listener):PlayerView =
     (LayoutInflater.from(context).inflate(R.layout.nabd_video_player,null,false) as PlayerView).apply {
         setEnableComposeSurfaceSyncWorkaround(true)

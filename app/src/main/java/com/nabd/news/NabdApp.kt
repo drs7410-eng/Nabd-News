@@ -167,7 +167,8 @@ import kotlinx.coroutines.withContext
     val worldIds=remember(worldMeta){worldMeta.map{it.articleId}.toSet()}
     val translatedSearch=if(query.isNotBlank())vm.dao.worldHeadlines().collectAsStateWithLifecycle(initialValue=emptyList()).value else emptyList()
     val since = when (period) { "اليوم" -> System.currentTimeMillis() - 86400000L; "هذا الأسبوع" -> System.currentTimeMillis() - 7 * 86400000L; else -> 0L }
-    val filtered = articles.filter { (page!="home" || it.id !in worldIds) && (page != "saved" || it.saved) && (category == "الكل" || it.category == category) && (source == "الكل" || it.source == source) && it.published >= since && (query.isBlank() || ("${it.title} ${it.availableText} ${it.source}".contains(query, true) || translatedSearch.any{t->t.articleId==it.id&&t.translated.contains(query,true)})) }
+    val latestCutoff=remember(articles,vm.retentionDays()){System.currentTimeMillis()-vm.retentionDays()*86400000L}
+    val filtered = articles.filter { (page!="home" || it.id !in worldIds && (it.published<=0 || it.published>=latestCutoff)) && (page != "saved" || it.saved) && (category == "الكل" || it.category == category) && (source == "الكل" || it.source == source) && it.published >= since && (query.isBlank() || ("${it.title} ${it.availableText} ${it.source}".contains(query, true) || translatedSearch.any{t->t.articleId==it.id&&t.translated.contains(query,true)})) }
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     LazyColumn(state = listState, contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         if (page == "home") item {

@@ -35,9 +35,10 @@ object WorldTranslationChoice {
     val headlineFlow=remember{vm.dao.worldHeadlines().distinctUntilChanged()}
     val searchTranslations=if(query.isNotBlank())headlineFlow.collectAsStateWithLifecycle(initialValue=emptyList()).value else emptyList()
     val byArticle=remember(metadata){metadata.associateBy{it.articleId}};val byPublisher=remember(publishers){publishers.associateBy{it.id}}
-    val visible=remember(articles,byArticle,byPublisher,query,category,publisher,country,tab,translatedIds,searchTranslations){articles.filter{a->
+    val latestCutoff=remember(articles,vm.retentionDays()){System.currentTimeMillis()-vm.retentionDays()*86400000L}
+    val visible=remember(articles,byArticle,byPublisher,query,category,publisher,country,tab,translatedIds,searchTranslations,latestCutoff){articles.filter{a->
         val m=byArticle[a.id];val p=m?.let{byPublisher[it.publisherId]}
-        m!=null && p!=null && (tab!="المحفوظات" || a.saved || a.id in translatedIds) &&
+        m!=null && p!=null && (tab=="المحفوظات" || query.isNotBlank() || a.published<=0 || a.published>=latestCutoff) && (tab!="المحفوظات" || a.saved || a.id in translatedIds) &&
             (publisher.isBlank()||m.publisherId==publisher)&&(country=="الكل"||p.country==country)&&(category=="الكل"||a.category==category)&&
             (query.isBlank()||"${a.title} ${a.summary} ${p.name} ${p.arabicName}".contains(query,true)||searchTranslations.any{it.articleId==a.id&&it.translated.contains(query,true)})
     }.sortedByDescending{it.published}}
