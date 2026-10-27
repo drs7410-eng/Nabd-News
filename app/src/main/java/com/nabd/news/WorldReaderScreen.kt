@@ -48,9 +48,10 @@ fun worldReadingPieces(a:Article):List<WorldReadingPiece> = if(a.fullContent.isB
     var original by rememberSaveable(a.id){mutableStateOf(false)};var compare by rememberSaveable(a.id){mutableStateOf(false)}
     var font by rememberSaveable{mutableFloatStateOf(vm.settings.get("articleFontSize","18").toFloatOrNull()?.coerceIn(16f,28f)?:18f)}
     var formatting by remember{mutableStateOf(false)};var more by remember{mutableStateOf(false)};var archive by remember{mutableStateOf(false)};var cloud by remember{mutableStateOf(false)}
+    var permissions by remember{mutableStateOf(false)}
     var translating by remember{mutableStateOf(false)};var problem by remember{mutableStateOf("")};var retry by remember{mutableIntStateOf(0)};var expanded by rememberSaveable(a.id){mutableStateOf(false)}
     var preferred by rememberSaveable(a.id){mutableStateOf(vm.settings.get("worldPreferred_${a.id}","MLKit"))}
-    val auto=remember(version){vm.settings.get("worldAutoLocal","false")=="true"}
+    val auto=remember(version){vm.settings.get("worldAutoLocal","true")=="true"}
     val allowed=WorldRights.local(publisher,meta)
     val pieces=remember(a.contentBlocks,a.fullContent,a.image){worldReadingPieces(a)}
     val titleParts=remember(a.title){WorldTextParts.part("title",a.title)}
@@ -73,6 +74,7 @@ fun worldReadingPieces(a:Article):List<WorldReadingPiece> = if(a.fullContent.isB
             }
         }catch(e:CancellationException){throw e}catch(e:Exception){problem=safeError(e)}finally{translating=false}
     }
+    if(permissions)WorldPermissionDialog(vm,publisher){permissions=false;vm.configVersion.value++}
     if(archive)AlertDialog(onDismissRequest={archive=false},title={Text("أرشيف الترجمات — نسخ قديمة محفوظة")},text={LazyColumn(Modifier.heightIn(max=470.dp),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         items(rows.filter{it.state=="ready"&&(WorldRights.local(publisher,meta)||WorldRights.cloud(publisher,meta))},key={it.id}){r->SceneCard{Caption("${r.slot} • ${r.engine} • ${r.engineVersion} • ${dateText(r.created)}");Caption("هذه نسخة مؤرشفة؛ قد يختلف النص أو القاموس الحالي");SelectionContainer{Text(r.translated)};TextButton(onClick={clipboard.setText(AnnotatedString(r.translated))}){Text("نسخ هذه النسخة")}}}
     }},confirmButton={TextButton(onClick={archive=false}){Text("إغلاق")}})
@@ -81,7 +83,7 @@ fun worldReadingPieces(a:Article):List<WorldReadingPiece> = if(a.fullContent.isB
     val listState=rememberLazyListState()
     LazyColumn(state=listState,contentPadding=PaddingValues(horizontal=22.dp,vertical=18.dp),verticalArrangement=Arrangement.spacedBy(22.dp)) {
         item(key="publisher") { Column(verticalArrangement=Arrangement.spacedBy(8.dp)) {
-            Caption("${publisher.name} • ${publisher.country} • ${dateText(a.published)}",Mint)
+            Caption("${publisher.name} • ${publisher.country} • ${newsAge(a.published)} • ${dateText(a.published)}",Mint)
             if(meta.author.isNotBlank())Text("بقلم ${meta.author}",style=MaterialTheme.typography.labelLarge)
             LinkButton(a.url,"المقال الأصلي • ${publisher.name}")
             if(publisher.termsUrl.isNotBlank())LinkButton(publisher.termsUrl,"شروط إعادة الاستخدام والترجمة")
@@ -127,7 +129,8 @@ fun worldReadingPieces(a:Article):List<WorldReadingPiece> = if(a.fullContent.isB
             if(meta.restriction.isNotBlank())Text(meta.restriction,color=Accent)
             if(!allowed)Caption(WorldRights.localBlock(publisher,meta))
             if(problem.isNotBlank())Text(problem,color=Accent)
-            if(!auto)TextButton(onClick=configure){Text("إعداد الترجمة المحلية مرة واحدة")}
+            if(!auto)TextButton(onClick={vm.settings.set("worldAutoLocal","true");vm.configVersion.value++}){Text("تفعيل الترجمة المحلية")}
+            if(!allowed)TextButton(onClick={permissions=true}){Text("إعداد ترجمة هذه الصحيفة")}
             else if(problem.isNotBlank())FlowRow{TextButton(onClick={retry++}){Text("إعادة محاولة الترجمة المحلية")};TextButton(onClick=configure){Text("إعداد نموذج اللغة")}}
             TextButton(onClick={vm.loadDetails(a.id,true)},enabled=a.id !in loading){Text("إعادة فحص متن المصدر")}
             LinkButton(a.url,"فتح المصدر الأصلي باختيارك")

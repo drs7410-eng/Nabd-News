@@ -12,7 +12,10 @@ import androidx.media3.ui.PlayerView
 /** Internal construction shared by the real viewer and decoder tests, never exposed as an Intent. */
 internal fun createNabdNativePlayer(context:Context,url:String,muted:Boolean,autoplay:Boolean,listener:Player.Listener):PlayerView =
     (LayoutInflater.from(context).inflate(R.layout.nabd_video_player,null,false) as PlayerView).apply {
-        val engine=ExoPlayer.Builder(context).build();player=engine
+        setEnableComposeSurfaceSyncWorkaround(true)
+        setKeepContentOnPlayerReset(false)
+        val renderers=androidx.media3.exoplayer.DefaultRenderersFactory(context).setEnableDecoderFallback(true)
+        val engine=ExoPlayer.Builder(context,renderers).build();player=engine
         engine.setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(),true)
         engine.setHandleAudioBecomingNoisy(true);engine.volume=if(muted)0f else 1f
         engine.addListener(listener);engine.setMediaItem(MediaItem.fromUri(url));engine.playWhenReady=autoplay;engine.prepare()

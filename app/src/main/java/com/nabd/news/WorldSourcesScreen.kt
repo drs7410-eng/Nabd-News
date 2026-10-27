@@ -23,6 +23,11 @@ val worldLanguages:Map<String,String> = com.google.mlkit.nl.translate.TranslateL
 
 @Composable fun WorldSourcesScreen(vm:NabdViewModel,browse:(String)->Unit) {
     val publishers by vm.worldPublishers.collectAsStateWithLifecycle();val feeds by vm.worldFeeds.collectAsStateWithLifecycle();val metadata by vm.worldArticles.collectAsStateWithLifecycle()
+    val modelStates by vm.worldModelStatus.collectAsStateWithLifecycle()
+    val downloads by vm.worldDownloads.collectAsStateWithLifecycle()
+    var modelLanguage by remember{mutableStateOf("")}
+    LaunchedEffect(publishers.map{it.id to it.enabled}){publishers.filter{it.enabled&&it.allowLocal}.map{it.language}.distinct().forEach{vm.checkWorldModel(it)}}
+    if(modelLanguage.isNotBlank())AlertDialog(onDismissRequest={modelLanguage=""},title={Text("إعداد العربية لهذه الصحيفة")},text={Text("تنزيل نموذج ${worldLanguages[modelLanguage]?:modelLanguage} إلى العربية من Google، ثم تُترجم الأخبار الظاهرة والمقال عند فتحه على الجهاز. قد يحتاج التنزيل عشرات MB؛ لا إرسال سحابي ولا رسوم ترجمة.")},confirmButton={TextButton(onClick={val language=modelLanguage;modelLanguage="";vm.downloadWorldModel(language,true)}){Text("تنزيل عبر Wi-Fi")}},dismissButton={TextButton(onClick={val language=modelLanguage;modelLanguage="";vm.downloadWorldModel(language,false)}){Text("استخدام اتصال الهاتف")}})
     var query by rememberSaveable{mutableStateOf("")};var adding by remember{mutableStateOf(false)};var rights by remember{mutableStateOf<WorldPublisher?>(null)}
     var working by remember{mutableStateOf<Set<String>>(emptySet())}
     var setupMessages by remember{mutableStateOf<Map<String,String>>(emptyMap())}
@@ -62,7 +67,14 @@ val worldLanguages:Map<String,String> = com.google.mlkit.nl.translate.TranslateL
                 Text(if(p.id in working)"جارٍ إعداد الصحيفة…"else if(p.enabled)"تحديث وفتح الصحيفة"else"اختيار وتفعيل الصحيفة")
             }
             setupMessages[p.id]?.let{Caption(it,Accent)}
-            if(p.enabled&&!p.allowLocal)Caption("RSS مفعل، لكن تنزيل النموذج لا يفعّل إذن ترجمة الناشر تلقائيًا")
+            if(p.enabled&&!p.allowLocal) {
+                Caption("RSS مفعل؛ الترجمة تحتاج مراجعة أذونات المصدر مرة واحدة")
+                TextButton(onClick={rights=p}){Text("إعداد ترجمة هذه الصحيفة")}
+            }
+            if(p.allowLocal) {
+                Caption("الترجمة المحلية • ${worldLanguages[p.language]?:p.language} • ${modelStates[p.language]?:"يُفحص النموذج عند التفعيل"}",Mint)
+                if(modelStates[p.language]!="جاهز محليًا")TextButton(onClick={modelLanguage=p.language},enabled=p.language !in downloads){Text(if(p.language in downloads)"جارٍ تجهيز العربية…" else "تجهيز العربية لهذه الصحيفة")}
+            }
             TextButton(onClick={advanced=if(p.id in advanced)advanced-p.id else advanced+p.id}){Text(if(p.id in advanced)"إخفاء الإعدادات المتقدمة"else"تفاصيل المصدر والإعدادات المتقدمة")}
             if(p.id in advanced) {
             LinkButton(p.website,"الموقع الرسمي للصحيفة")
@@ -114,7 +126,7 @@ val worldLanguages:Map<String,String> = com.google.mlkit.nl.translate.TranslateL
         close()
     }catch(e:Exception){error=safeError(e)}}}){Text("فحص وإضافة")}},dismissButton={TextButton(onClick=close){Text("إلغاء")}})
 }
-@Composable private fun WorldPermissionDialog(vm:NabdViewModel,p:WorldPublisher,close:()->Unit) {
+@Composable internal fun WorldPermissionDialog(vm:NabdViewModel,p:WorldPublisher,close:()->Unit) {
     var terms by remember{mutableStateOf(p.termsUrl)};var note by remember{mutableStateOf(p.rightsNote)}
     var cache by remember{mutableStateOf(p.allowCache)};var local by remember{mutableStateOf(p.allowLocal)};var cloud by remember{mutableStateOf(p.allowCloud)}
     var html by remember{mutableStateOf(p.allowHtml)};var images by remember{mutableStateOf(p.allowImages)};var confirmed by remember{mutableStateOf(p.permission=="recorded")};var error by remember{mutableStateOf("")}

@@ -108,7 +108,7 @@ fun openOriginalArticle(context: Context, url: String) {
             Caption("${a.category} • ${a.source}", Mint); Spacer(Modifier.height(10.dp))
             SelectionContainer { Text(a.title, fontSize = 29.sp, lineHeight = 44.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, style = LocalTextStyle.current.copy(textDirection = TextDirection.ContentOrRtl)) }
             Spacer(Modifier.height(12.dp))
-            Caption("${dateText(a.published)} • $readingMinutes دقائق قراءة تقديريًا")
+            Caption("${newsAge(a.published)} • ${dateText(a.published)} • $readingMinutes دقائق قراءة تقديريًا")
             }
         }
         item(key = "hero") {

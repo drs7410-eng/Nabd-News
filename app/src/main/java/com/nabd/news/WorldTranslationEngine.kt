@@ -43,6 +43,14 @@ class MlKitWorldTranslator:WorldLocalTranslator {
         try { c.downloadModelIfNeeded(DownloadConditions.Builder().apply{if(wifi)requireWifi()}.build()).worldAwait() }
         finally{c.close()}
     } }
+    /** One translator/model session for the whole paragraph, including protected spans.
+     * Opening/closing a model for every number/quote fragment made real articles appear stuck. */
+    suspend fun translateProtected(text:EditorialProtection.Protected,language:String):String {
+        if(language=="ar")return text.locally{it}
+        require(ready(language)){"نموذج اللغة غير جاهز؛ راجع إعداد الترجمة"}
+        val c=client(language)
+        return try{text.locally{c.translate(it).worldAwait()}}finally{c.close()}
+    }
     override suspend fun translate(text:String,language:String):String {
         if(language=="ar")return text
         require(ready(language)){"نموذج $language ← العربية غير جاهز. نزّله مرة واحدة من إعدادات الترجمة؛ لم يُرسل النص إلى السحابة."}
@@ -135,7 +143,7 @@ class WorldTranslationEngine(private val dao:NabdDao,private val local:WorldLoca
                 try {
                     val protected=EditorialProtection.protect(text,glossary.filter{it.domain=="عام"||it.domain==category},meta.language)
                     var analysisId=""
-                    val output=if(engine=="MLKit")withContext(Dispatchers.Default){protected.locally{local.translate(it,meta.language)}}else {
+                    val output=if(engine=="MLKit")withContext(Dispatchers.Default){if(local is MlKitWorldTranslator)local.translateProtected(protected,meta.language) else protected.locally{local.translate(it,meta.language)}}else {
                         if(engine=="Gemini")require(settings?.get("worldGeminiFreeConfirmed") == "true"){"أكد استخدام فئة Gemini المجانية من إعدادات الترجمة؛ لا يمكن إثبات الفئة من المفتاح"}
                         val a=requireNotNull(ai).analyze(emptyList(),"ترجمة تحريرية",engine,monitorContext="<SOURCE language='${meta.language}' publisher='${publisher.name}'>${protected.text}</SOURCE>",contextOwnerId=article,contextTitle=publisher.name,editorialTranslation=true)
                         analysisId=a.id

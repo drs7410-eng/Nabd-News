@@ -95,7 +95,7 @@ object WorldTranslationChoice {
     val rows by remember(a.id){vm.dao.worldTranslations(a.id).distinctUntilChanged()}.collectAsStateWithLifecycle(initialValue=emptyList())
     val glossary by vm.worldGlossary.collectAsStateWithLifecycle();val version by vm.configVersion.collectAsStateWithLifecycle()
     val gh=remember(glossary,a.category){EditorialProtection.glossaryHash(glossary,a.category)}
-    val auto=remember(version){vm.settings.get("worldAutoLocal","false")=="true"}
+    val auto=remember(version){vm.settings.get("worldAutoLocal","true")=="true"}
     val allowed=WorldRights.local(p,meta)
     val preferred=remember(a.id,version){vm.settings.get("worldPreferred_${a.id}","MLKit")}
     fun best(slot:String,text:String)= (if(preferred!="MLKit"&&WorldRights.cloud(p,meta))WorldTranslationChoice.get(rows,slot,text,meta.language,gh,preferred)else null)
@@ -126,6 +126,6 @@ object WorldTranslationChoice {
         if((title?.engine=="MLKit"||summary?.engine=="MLKit")&&meta.language!="ar")WorldGoogleAttribution()
         if(WorldRights.needsAuthor(p.website))LinkButton("https://creativecommons.org/licenses/by/3.0/","CC BY 3.0 • الأصل مرجعك والترجمة آلية")
         if(title!=null||summary!=null)Caption("مترجم آليًا • ${listOfNotNull(title?.engine,summary?.engine).distinct().joinToString(" / ")}") else Caption(when{translating->"تُجهّز العربية محليًا؛ الأصل متاح";!allowed->WorldRights.localBlock(p,meta);translationProblem.isNotBlank()->translationProblem;!auto->"الترجمة المحلية التلقائية متوقفة في إعدادات الترجمة";else->"العربية غير جاهزة؛ افتح المقال لإعادة المحاولة"})
-        Caption("${dateText(a.published)} • ${worldLanguages[meta.language]?:meta.language}")
+        NewsTimestamp(a.published)
     }
 }

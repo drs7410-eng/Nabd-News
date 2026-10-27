@@ -61,7 +61,7 @@ class NabdViewModel @JvmOverloads constructor(app: Application, val worldLocal: 
     val worldModelStatus=MutableStateFlow<Map<String,String>>(emptyMap())
     fun initializeWorld()=task {world.seed()}
     fun refreshWorld() {if(worldBusy.value)return;task {worldBusy.value=true;try {
-        val states=world.refresh();topics.rebuild()
+        val states=world.refresh();pruneNews();topics.rebuild()
         notices.emit(if(states.isEmpty())"فعّل مصدرًا تم التحقق من خلاصته وأذوناته أولًا" else "فُحصت ${states.size} خلاصات؛ ${states.count{it.error.isNotBlank()}} تعذر تحديثها. بقي المحفوظ متاحًا.")
     }finally{worldBusy.value=false}}}
     fun downloadWorldModel(language:String,wifi:Boolean) {
@@ -132,11 +132,14 @@ class NabdViewModel @JvmOverloads constructor(app: Application, val worldLocal: 
     val models = MutableStateFlow<Map<String, List<String>>>(emptyMap())
     val nanoStatus = MutableStateFlow("لم يُفحص بعد؛ يتطلب جهازًا يدعم ML Kit GenAI وAICore")
     private val noteMutex = Mutex()
-    init { task { if (settings.get("sourcesSeeded") != "true") { news.seed(); settings.set("sourcesSeeded", "true") } } }
+    fun retentionDays()=settings.get("newsRetentionDays","7").toIntOrNull()?.takeIf{it in listOf(3,7,14,30)}?:7
+    private suspend fun pruneNews():Int=dao.pruneNewsCache(System.currentTimeMillis()-retentionDays()*86400000L)
+    fun cleanNewsCache()=task { val count=pruneNews();notices.emit("أزيل $count خبر قديم غير محفوظ من الذاكرة المؤقتة؛ المحفوظات والعمل الشخصي لم تُحذف") }
+    init { task { pruneNews();if (settings.get("sourcesSeeded") != "true") { news.seed(); settings.set("sourcesSeeded", "true") } } }
     fun task(block: suspend () -> Unit) = viewModelScope.launch {
         try { block() } catch (e: CancellationException) { throw e } catch (e: Exception) { notices.emit(safeError(e)) }
     }
-    fun refresh() { if (busy.value) return; task { busy.value = true; try { notices.emit(news.refresh());topics.rebuild() } finally { busy.value = false } } }
+    fun refresh() { if (busy.value) return; task { busy.value = true; try { notices.emit(news.refresh());pruneNews();topics.rebuild() } finally { busy.value = false } } }
     fun test(provider: String) {
         if (busy.value) return
         task {

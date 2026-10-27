@@ -43,7 +43,12 @@ val Muted:Color @Composable get()=LocalNabdPalette.current.muted
     }
 }
 
-fun dateText(time: Long) = if (time <= 0) "تاريخ النشر غير متاح" else SimpleDateFormat("dd MMM yyyy • HH:mm", Locale.forLanguageTag("ar")).format(Date(time))
+@Composable fun NewsTimestamp(time:Long) {
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(time) { while(true) { now=System.currentTimeMillis();kotlinx.coroutines.delay(60000) } }
+    Caption("${newsAge(time,now)} • ${dateText(time)}")
+}
+fun dateText(time: Long) = if (time <= 0) "تاريخ النشر غير متاح" else SimpleDateFormat("dd MMM yyyy • h:mm a", Locale.forLanguageTag("ar")).apply { dateFormatSymbols = dateFormatSymbols.apply { amPmStrings = arrayOf("صباحًا", "مساءً") } }.format(Date(time))
 fun money(value: Double?) = value?.let { "$" + String.format(Locale.US, "%.5f", it) } ?: "غير متاح"
 @Composable fun Caption(text: String, color: Color = Muted) { Text(text, color = color, style = MaterialTheme.typography.bodySmall, lineHeight = 21.sp) }
 @Composable fun SectionTitle(title: String, subtitle: String = "") {
@@ -96,8 +101,9 @@ fun money(value: Double?) = value?.let { "$" + String.format(Locale.US, "%.5f", 
             HorizontalDivider(color = Color(0xFF29313D))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Language, null, tint = Mint, modifier = Modifier.size(16.dp)); Spacer(Modifier.width(6.dp))
-                Text(article.source, color = Mint, fontSize = 12.sp); Spacer(Modifier.weight(1f)); Caption(dateText(article.published))
+                Text(article.source, color = Mint, fontSize = 12.sp)
             }
+            NewsTimestamp(article.published)
         }
     }
 }

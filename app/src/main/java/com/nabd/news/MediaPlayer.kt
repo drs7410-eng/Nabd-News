@@ -47,11 +47,12 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
         val observer = LifecycleEventObserver { _, event ->
             if(event == Lifecycle.Event.ON_PAUSE) { web?.evaluateJavascript(MediaEmbedPlayback.command(false,latestMuted),null); web?.onPause(); native?.pause() }
             if(event == Lifecycle.Event.ON_RESUME) { web?.onResume();web?.evaluateJavascript(MediaEmbedPlayback.command(latestAuto,latestMuted),null);native?.playWhenReady=latestAuto }
-            if(event == Lifecycle.Event.ON_STOP) latestClose() // No background playback; disposal destroys the remote player.
+            if(event == Lifecycle.Event.ON_STOP) { native?.pause(); web?.onPause() }
         }
         lifecycle.addObserver(observer)
-        onDispose { lifecycle.removeObserver(observer); native?.release(); web?.apply { stopLoading(); onPause(); removeAllViews(); destroy() }; fullCallback?.onCustomViewHidden() }
+        onDispose { lifecycle.removeObserver(observer); fullCallback?.onCustomViewHidden() }
     }
+    LaunchedEffect(target.url){failed=false;loading=true;failureReason=""}
     LaunchedEffect(native,muted){native?.volume=if(muted)0f else 1f}
     LaunchedEffect(native,autoPlay){native?.playWhenReady=autoPlay}
     LaunchedEffect(web,autoPlay,muted){if(target.provider in MediaEmbedPlayback.controllable)web?.evaluateJavascript(MediaEmbedPlayback.command(autoPlay,muted),null)}
@@ -70,11 +71,14 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
                 if(failed && failureReason.isNotBlank()) Caption(failureReason)
                 if(target.provider == "X") Caption("قد يمنع X العرض أو يطلب تسجيل الدخول. لا يضمن التضمين ترتيب الحساب كاملًا. إذا بقي رابط فقط فلم ينجح تحميل التضمين.")
                 Box(Modifier.fillMaxWidth().weight(1f)) {
+                key(target.provider,target.url) {
                 if(target.provider == "فيديو مباشر") AndroidView(modifier=Modifier.fillMaxSize(), factory={ ctx ->
                     createNabdNativePlayer(ctx,target.url,latestMuted,latestAuto,object:Player.Listener {
                         override fun onPlaybackStateChanged(state:Int){loading=state==Player.STATE_BUFFERING;if(state==Player.STATE_ENDED)latestEnded()}
                         override fun onPlayerError(error:PlaybackException){loading=false;failed=true;failureReason="تعذر فك الترميز أو جلب الفيديو • ${error.errorCodeName}"}
                     }).also{native=it.player as ExoPlayer}
+                }, onRelease={ view ->
+                    (view.player as? ExoPlayer)?.let { engine -> if(native===engine)native=null;view.player=null;engine.release() }
                 },update={view->view.keepScreenOn=autoPlay})
                 else AndroidView(modifier=Modifier.fillMaxSize(), factory={ ctx ->
                     WebView(ctx).apply {
@@ -110,7 +114,11 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
                         else if(target.provider in MediaEmbedPlayback.controllable) loadDataWithBaseURL("https://${ctx.packageName}/",MediaEmbedPlayback.html(target,"https://${ctx.packageName}/",latestAuto,latestMuted),"text/html","UTF-8",null)
                         else loadUrl(target.url,mapOf("Referer" to "https://${ctx.packageName}/"))
                     }
+                },onRelease={view->
+                    if(web===view)web=null
+                    view.stopLoading();view.onPause();view.removeAllViews();view.destroy()
                 })
+                } // target-specific AndroidView identity
                 if(full != null) AndroidView(factory = { full!! }, modifier=Modifier.fillMaxSize())
                 }
             }
@@ -118,6 +126,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
     }
 }
 
-@Composable private fun MediaPlayerFrame(embedded:Boolean, close:()->Unit, content:@Composable ()->Unit) {
+@Composable internal fun MediaPlayerFrame(embedded:Boolean, close:()->Unit, content:@Composable ()->Unit) {
     if(embedded) content() else Dialog(onDismissRequest=close,properties=DialogProperties(usePlatformDefaultWidth=false,dismissOnBackPress=false)) { content() }
 }

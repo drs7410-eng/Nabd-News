@@ -16,8 +16,8 @@ android {
         if(galaxyOnlyBuild) ndk { abiFilters += "arm64-v8a" }
         minSdk = 26
         targetSdk = 35
-        versionCode = 13
-        versionName = "2.1.2-personal"
+        versionCode = 14
+        versionName = "2.1.3-personal"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         if(qaBuild) testInstrumentationRunnerArguments["clearPackageData"] = "true"
         manifestPlaceholders["nabdAppLabel"] = if(qaBuild) "نبض — اختبار" else "نبض"

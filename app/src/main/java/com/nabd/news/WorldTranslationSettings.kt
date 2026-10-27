@@ -17,7 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
     val glossary by vm.worldGlossary.collectAsStateWithLifecycle();val statuses by vm.worldModelStatus.collectAsStateWithLifecycle();val downloads by vm.worldDownloads.collectAsStateWithLifecycle()
     var language by rememberSaveable{mutableStateOf("en")};var wifi by rememberSaveable{mutableStateOf(true)}
     val version by vm.configVersion.collectAsStateWithLifecycle()
-    val auto=remember(version){vm.settings.get("worldAutoLocal","false")=="true"};var confirmDownload by remember{mutableStateOf(false)}
+    val auto=remember(version){vm.settings.get("worldAutoLocal","true")=="true"};var confirmDownload by remember{mutableStateOf(false)}
     var editing by remember{mutableStateOf<WorldGlossary?>(null)};var adding by remember{mutableStateOf(false)}
     var free by remember{mutableStateOf(vm.settings.get("worldGeminiFreeConfirmed")=="true")}
     LaunchedEffect(language){vm.checkWorldModel(language)}

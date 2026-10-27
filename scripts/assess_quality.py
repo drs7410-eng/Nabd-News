@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-UNIT_REQUIRED = {"SharedTextIntentTest", "BbcArticleExtractorTest", "BbcRepositoryRoomTest", "FeedParserTest", "WorldRoomTest", "WorldNetworkTest", "WorldEditorialTest", "PlaybackRegressionTest", "ArticleMigrationSqlTest"}
+UNIT_REQUIRED = {"NewsRetentionTest", "NewsTimeTest", "SharedTextIntentTest", "BbcArticleExtractorTest", "BbcRepositoryRoomTest", "FeedParserTest", "WorldRoomTest", "WorldNetworkTest", "WorldEditorialTest", "PlaybackRegressionTest", "ArticleMigrationSqlTest"}
 DEVICE_REQUIRED = {"PersistenceTest", "ArticleUiTest", "SceneNavigationTest", "BbcReaderUiTest", "MlKitTranslationSmokeTest", "NativePlaybackTest", "WorldReadingFlowTest", "ArticleMigrationTest", "WorldNavigationTest", "MediaNavigationTest", "UiSmokeTest"}
 LIVE_UNIT = {"BbcReferenceLiveTest", "LiveFeedAuditTest"}
 

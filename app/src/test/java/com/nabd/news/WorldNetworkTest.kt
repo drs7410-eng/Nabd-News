@@ -117,6 +117,14 @@ class WorldNetworkTest {
         db.dao().saveWorldPublisher(p)
         assertEquals("ready",repo.activate(p.id).state);assertEquals(1,db.dao().allArticles().size)
     }
+    @Test fun readingRssCanBeActivatedWithoutInventingTranslationPermission()=runBlocking {
+        db.dao().saveWorldPublisher(p.copy(allowLocal=false,allowCloud=false,allowHtml=false))
+        db.dao().saveWorldFeed(feed)
+        val result=WorldRepository(db,client{200 to xml}).activate(p.id)
+        assertEquals("ready",result.state)
+        assertEquals(1,db.dao().allArticles().size)
+        assertFalse(db.dao().worldPublisher(p.id)!!.allowLocal)
+    }
     @Test fun selectionWithBlockedOrFakeRssNeverMarksPublisherAsReady()=runBlocking {
         db.dao().saveWorldPublisher(p);db.dao().saveWorldFeed(feed)
         val blocked=WorldRepository(db,client{403 to "Denied"}).activate(p.id)

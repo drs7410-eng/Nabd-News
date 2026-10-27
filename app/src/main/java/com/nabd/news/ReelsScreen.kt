@@ -57,8 +57,8 @@ import kotlinx.coroutines.launch
                     Text("${clip.source} • ${clip.topic} • ${clip.provider}",Modifier.padding(horizontal=20.dp,vertical=6.dp),style=MaterialTheme.typography.labelMedium,color=Mint)
                     Row(Modifier.fillMaxWidth().weight(1f)) {
                         Box(Modifier.weight(1f).fillMaxHeight(),contentAlignment=Alignment.Center) {
-                            if(active) key(clip.id) {
-                                MediaPlayer(MediaTarget(clip.provider,clip.playUrl),clip.title,close,embedded=true,autoPlay=autoplay,muted=muted,ended={if(active && pager.settledPage==index && !pager.isScrollInProgress && index<session.lastIndex && autoplay)move(1)})
+                            if(focused) key(clip.id) {
+                                MediaPlayer(MediaTarget(clip.provider,clip.playUrl),clip.title,close,embedded=true,autoPlay=autoplay && active,muted=muted,ended={if(active && pager.settledPage==index && !pager.isScrollInProgress && index<session.lastIndex && autoplay)move(1)})
                             } else if(clip.thumbnail.isNotBlank()) NewsImage(clip.thumbnail,clip.title)
                             else Icon(Icons.Outlined.PlayCircle,null,tint=Muted,modifier=Modifier.size(64.dp))
                         }

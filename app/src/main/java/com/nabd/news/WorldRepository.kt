@@ -59,7 +59,7 @@ class WorldRepository(private val db:NabdDatabase,client:OkHttpClient) {
             return@withLock SetupResult("failed",existing.firstOrNull()?.let{dao.allWorldFeeds().firstOrNull{f->f.id==it.id}?.error}?.takeIf{it.isNotBlank()}?:safeError(e))
         }
         val feed=selected?:return@withLock SetupResult("unavailable","لم نعثر على RSS عام صالح لهذه الصحيفة؛ لم يُفعّل رابط غير مختبر")
-        if(!p.allowCache || p.termsUrl.isBlank() || (!WorldRights.knownRestricted(p.website) && p.permission!="restricted" && (!p.allowLocal || p.permission!="recorded")))return@withLock SetupResult("permission_required","اكتمل إعداد RSS واللغة والقسم. يلزم استكمال إذن الحفظ والترجمة مرة واحدة؛ لا يمنح وجود الخلاصة إذنًا تلقائيًا.",feed)
+        if(!p.allowCache || p.termsUrl.isBlank() || (p.permission!="restricted" && p.permission!="recorded"))return@withLock SetupResult("permission_required","اكتمل إعداد RSS واللغة والقسم. يلزم استكمال إذن الحفظ والترجمة مرة واحدة؛ لا يمنح وجود الخلاصة إذنًا تلقائيًا.",feed)
         val installed=check(feed,true)
         if(installed.status!="verified")return@withLock SetupResult("failed",installed.error,installed)
         dao.saveWorldPublisher((dao.worldPublisher(p.id)?:p).copy(enabled=true))

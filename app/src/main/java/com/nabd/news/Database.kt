@@ -79,6 +79,26 @@ interface NabdDao {
     @Query("SELECT * FROM feed_quality") fun feedQuality(): Flow<List<FeedQuality>>
     @Upsert suspend fun saveFeedQuality(quality: FeedQuality)
 
+    /** Expire only disposable feed cache. Personal work and body translations are protected. */
+    @Query("""SELECT a.id FROM articles a WHERE a.saved=0 AND a.published>0 AND a.published<:cutoff
+        AND NOT EXISTS (SELECT 1 FROM notes n WHERE instr(',' || n.articleIds || ',', ',' || a.id || ',')>0)
+        AND NOT EXISTS (SELECT 1 FROM analyses n WHERE instr(',' || n.articleIds || ',', ',' || a.id || ',')>0)
+        AND NOT EXISTS (SELECT 1 FROM conversations c WHERE c.articleId=a.id)
+        AND NOT EXISTS (SELECT 1 FROM world_translations w WHERE w.articleId=a.id AND w.state='ready' AND w.slot NOT IN ('title','summary') AND w.slot NOT LIKE 'title:%' AND w.slot NOT LIKE 'summary:%')
+        AND NOT EXISTS (SELECT 1 FROM topic_articles t LEFT JOIN scene_topics st ON st.id=t.topicId WHERE t.articleId=a.id AND (t.mode!=0 OR st.saved=1))
+        AND NOT EXISTS (SELECT 1 FROM topic_timeline t WHERE t.reference=a.url AND t.kind='manual')
+        ORDER BY a.published LIMIT 500""") suspend fun expiredArticleIds(cutoff:Long):List<String>
+    @Query("DELETE FROM world_translations WHERE articleId IN (:ids)") suspend fun expireHeadlineTranslations(ids:List<String>)
+    @Query("DELETE FROM world_articles WHERE articleId IN (:ids)") suspend fun expireWorldMetadata(ids:List<String>)
+    @Query("DELETE FROM topic_articles WHERE articleId IN (:ids) AND mode=0") suspend fun expireAutomaticTopicLinks(ids:List<String>)
+    @Query("DELETE FROM articles WHERE id IN (:ids)") suspend fun expireArticles(ids:List<String>)
+    @Transaction suspend fun pruneNewsCache(cutoff:Long):Int {
+        val ids=expiredArticleIds(cutoff)
+        if(ids.isEmpty())return 0
+        expireHeadlineTranslations(ids);expireWorldMetadata(ids);expireAutomaticTopicLinks(ids);expireArticles(ids)
+        return ids.size
+    }
+
     @Query("SELECT * FROM articles ORDER BY published DESC") fun articles(): Flow<List<Article>>
     @Query("SELECT * FROM articles ORDER BY published DESC") suspend fun allArticles(): List<Article>
     @Query("SELECT * FROM articles WHERE id=:id") suspend fun article(id: String): Article?

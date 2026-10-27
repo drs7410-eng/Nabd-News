@@ -61,6 +61,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
             Action("الاستخدام والتكلفة", Icons.Outlined.Payments) { navigate("usage") }
         }
         BoxCard {
+            SectionTitle("الأخبار الحديثة والتخزين")
+            var days by remember { mutableIntStateOf(vm.retentionDays()) }
+            Picker("مدة الاحتفاظ بالأخبار غير المحفوظة",listOf("3 أيام","7 أيام","14 يومًا","30 يومًا"),when(days){3->"3 أيام";14->"14 يومًا";30->"30 يومًا";else->"7 أيام"}) {
+                days=it.substringBefore(' ').toInt();vm.settings.set("newsRetentionDays",days.toString())
+            }
+            Caption("التنظيف عند التشغيل والتحديث، حتى 500 خبر في المرة. تبقى المحفوظات والمقالات المرتبطة بملاحظات أو تحليلات أو محادثات أو موضوع محفوظ أو ربط يدوي، وكذلك ترجمات المتن. ترجمات العناوين والمقتطفات التلقائية مؤقتة وتنتهي مع الخبر غير المحفوظ. الأخبار بلا تاريخ تبقى حتى تتوفر سياسة لها.")
+            Action("تنظيف الأخبار القديمة الآن",Icons.Outlined.CleaningServices){vm.cleanNewsCache()}
+        }
+        BoxCard {
             SectionTitle("التصدير والنسخ الاحتياطي")
             Text("الملف الذي تصدّره يحتوي نصوصك الشخصية بشكل مقروء. اختر مكانًا تثق به. لا يشمل المفاتيح أو إعدادات الاتصال أو سجل الميزانية.", color = Muted, lineHeight = 26.sp)
             Action("تصدير دفتر Markdown", Icons.Outlined.Description) { export("md") }
