@@ -18,7 +18,7 @@ class NewsRetentionTest {
     @After fun close(){db.close()}
     @Test fun expiresDisposableCacheWithoutBreakingPersonalWorkOrBodyTranslations()=runBlocking {
         val dao=db.dao()
-        val ids=listOf("old","saved","note","analysis","conversation","manual","topic","translated","headline","recent","unknown","excluded")
+        val ids=listOf("old","saved","note","analysis","conversation","manual","topic","translated","headline","recent","unknown","excluded","cloud-headline")
         dao.addArticles(ids.map{Article(id=it,title=it,body="",url="https://test.example/$it",source="test",published=when(it){"recent"->900;"unknown"->0;else->100},saved=it=="saved")})
         dao.saveNote(Note(id="n",articleIds="note,other"))
         dao.saveAnalysis(Analysis(id="a",articleIds="analysis",operation="test",provider="mock",model="test",result="test",sources="",status="test",cacheKey="test"))
@@ -28,9 +28,9 @@ class NewsRetentionTest {
         dao.saveTopicArticle(TopicArticle("unsaved","manual",mode=1))
         dao.saveTopicArticle(TopicArticle("unsaved","excluded",mode=-1))
         dao.saveTopicArticle(TopicArticle("automatic","old"))
-        for(id in listOf("translated","headline")){
+        for(id in listOf("translated","headline","cloud-headline")){
             dao.saveWorldArticle(WorldArticle(id,"p","f","en"))
-            dao.saveWorldTranslation(WorldTranslation(id,id,if(id=="headline")"title" else "block-0","en",textHash="h",glossaryHash="g",engine="mock",engineVersion="1",original="test",translated="اختبار"))
+            dao.saveWorldTranslation(WorldTranslation(id,id,if(id!="translated")"title" else "block-0","en",textHash="h",glossaryHash="g",engine=if(id=="cloud-headline")"OpenAI" else "MLKit",engineVersion="1",original="test",translated="اختبار"))
         }
         assertEquals(2,dao.pruneNewsCache(500))
         assertNull(dao.article("old"));assertNull(dao.article("headline"))
