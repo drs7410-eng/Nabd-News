@@ -62,7 +62,7 @@ dependencies {
     implementation("org.jsoup:jsoup:1.18.3")
     implementation("net.dankito.readability4j:readability4j:1.0.8")
     implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation("androidx.browser:browser:1.8.0")
+    implementation("androidx.browser:browser:1.10.0")
     implementation("androidx.media3:media3-exoplayer:1.6.1")
     implementation("androidx.media3:media3-exoplayer-hls:1.6.1")
     implementation("androidx.media3:media3-ui:1.6.1")
