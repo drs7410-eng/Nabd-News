@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Require original signing key, never generate a replacement
         env:
           NABD_KEY_B64: ${{ secrets.NABD_KEYSTORE_BASE64 }}
